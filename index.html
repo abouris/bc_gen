@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Modern Business Card Creator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background-color: #1e1e1e;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.497);
+        }
+        .card {
+            background-color: #ffffff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            position: relative;
+            overflow: hidden;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            width: 480px;
+            height: 311px; /* Set fixed height */
+        }
+        .card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .control-label {
+            font-weight: normal;
+            font-size: 12px;
+            color: #b3b3b3;
+        }
+        .column-title {
+            font-weight: normal;
+            margin-bottom: 30px;
+            text-align: left;
+            font-size: 20px;
+            color: #ffffff;
+        }
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            background: #4a4a4a;
+            outline: none;
+            border-radius: 15px;
+            height: 8px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #00bcd4;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        input[type="color"], input[type="text"], input[type="email"], input[type="tel"], input[type="url"] {
+            width: 100%;
+            height: 30px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4a4a4a;
+            color: #ffffff;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        select {
+            padding: 8px;
+            font-size: 14px;
+            background-color: #4a4a4a;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+        }
+        #printButton, #downloadButton {
+            background-color: #00bcd4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+        #printButton:hover, #downloadButton:hover {
+            background-color: #008c9e;
+        }
+        .color-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .color-input-container {
+            flex: 1;
+        }
+        #logo-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            cursor: move;
+            display: none; /* Initially hidden */
+        }
+        #logo {
+            max-width: 100%;
+            max-height: 100%;
+            pointer-events: none;
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .card, .card * {
+                visibility: visible;
+            }
+            .card {
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        
+        <div>
+            
+            <h2 class="column-title">Business Card Generator</h2>
+            <div id="card" class="card">
+                <div id="logo-container"><img id="logo" src="" alt="Logo"></div>
+                <svg id="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 311">
+                    <rect id="svg-background" width="100%" height="100%" fill="white" />
+                    <text id="svg-name" x="40" y="60" font-family="Segoe UI, Tahoma, Geneva, Verdana, sans-serif" font-weight="normal" font-size="25" fill="#000000">Antonios Bouris</text>
+                    <text id="svg-title" x="40" y="110" font-family="Segoe UI, Tahoma, Geneva, Verdana, sans-serif" font-weight="normal" font-size="18" fill="#4a4a4a">designer</text>
+                    <text id="svg-email" x="40" y="170" font-family="Segoe UI, Tahoma, Geneva, Verdana, sans-serif" font-weight="normal" font-size="16" fill="#000000">antonios.bouris@gmail.com</text>
+                    <text id="svg-phone" x="40" y="200" font-family="Segoe UI, Tahoma, Geneva, Verdana, sans-serif" font-weight="normal" font-size="16" fill="#000000">+61 467 465 956</text>
+                    <text id="svg-website" x="40" y="230" font-family="Segoe UI, Tahoma, Geneva, Verdana, sans-serif" font-weight="normal" font-size="16" fill="#000000">abouris.github.io/info</text>
+                </svg>
+            </div>
+            <button id="printButton">Print Business Card</button>
+            <button id="downloadButton">Download Business Card</button>
+            <div class="control-group">
+                <label class="control-label">Card Size</label>
+                <select id="card-size">
+                    <option value="standard">Standard (55x85mm)</option>
+                    <option value="square">Square (55x55mm)</option>
+                    <option value="mini">Mini (45x85mm)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Card Background Color</label>
+                <div class="color-container">
+                    <input type="color" id="card-background-color" value="#ffffff">
+                    <input type="text" class="color-input" id="card-background-color-text" value="#ffffff">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Upload Logo</label>
+                <div class="color-container">
+                    <input type="file" id="logo-upload" accept="image/png, image/jpeg">
+                    <button id="clear-logo">Clear Logo</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Name</label>
+                <input type="text" id="name-input" value="Antonios Bouris">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Title</label>
+                <input type="text" id="title-input" value="designer">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Email</label>
+                <input type="email" id="email-input" value="antonios.bouris@gmail.com">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Phone</label>
+                <input type="tel" id="phone-input" value="+61 467 465 956">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Website</label>
+                <input type="url" id="website-input" value="abouris.github.io/info">
+            </div>
+        </div>
+        <div class="controls">
+            <h2 class="column-title">Name</h2>
+            <div class="control-group">
+                <label class="control-label">Font Size</label>
+                <input id="name-size" type="range" min="20" max="72" value="25" class="font-size-slider" data-target="svg-name">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Position Y</label>
+                <input id="name-position-y" type="range" min="0" max="100" value="60" class="position-slider" data-target="svg-name" data-attribute="y" data-max-height="311">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Position X</label>
+                <input id="name-position-x" type="range" min="0" max="100" value="40" class="position-slider" data-target="svg-name" data-attribute="x" data-max-width="480">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Font Family</label>
+                <select id="name-font-family" class="font-family-selector" data-target="svg-name">
+                    <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI</option>
+                    <option value="Arial, Helvetica, sans-serif">Arial</option>
+                    <option value="'Courier New', Courier, monospace">Courier New</option>
+                    <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Font Weight</label>
+                <select id="name-font-weight" class="font-weight-selector" data-target="svg-name">
+                    <option value="normal">Normal</option>
+                    <option value="italic">Italic</option>
+                    <option value="bold">Bold</option>
+                    <option value="bolder">Extra Bold</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Letter Spacing</label>
+                <input id="name-letter-spacing" type="range" min="0" max="10" value="0" class="letter-spacing-slider" data-target="svg-name">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Text Color</label>
+                <div class="color-container">
+                    <input type="color" id="name-color" value="#000000" class="text-color-picker" data-target="svg-name">
+                    <input type="text" class="color-input" id="name-color-text" value="#000000">
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <h2 class="column-title">Title</h2>
+            <div class="control-group">
+                <label class="control-label">Font Size</label>
+                <input id="title-size" type="range" min="12" max="48" value="18" class="font-size-slider" data-target="svg-title">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Position Y</label>
+                <input id="title-position-y" type="range" min="0" max="100" value="110" class="position-slider" data-target="svg-title" data-attribute="y" data-max-height="311">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Position X</label>
+                <input id="title-position-x" type="range" min="0" max="100" value="40" class="position-slider" data-target="svg-title" data-attribute="x" data-max-width="480">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Font Family</label>
+                <select id="title-font-family" class="font-family-selector" data-target="svg-title">
+                    <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI</option>
+                    <option value="Arial, Helvetica, sans-serif">Arial</option>
+                    <option value="'Courier New', Courier, monospace">Courier New</option>
+                    <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Font Weight</label>
+                <select id="title-font-weight" class="font-weight-selector" data-target="svg-title">
+                    <option value="normal">Normal</option>
+                    <option value="italic">Italic</option>
+                    <option value="bold">Bold</option>
+                    <option value="bolder">Extra Bold</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Letter Spacing</label>
+                <input id="title-letter-spacing" type="range" min="0" max="10" value="0" class="letter-spacing-slider" data-target="svg-title">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Text Color</label>
+                <div class="color-container">
+                    <input type="color" id="title-color" value="#4a4a4a" class="text-color-picker" data-target="svg-title">
+                    <input type="text" class="color-input" id="title-color-text" value="#4a4a4a">
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <h2 class="column-title">Email</h2>
+            <div class="control-group">
+                <label class="control-label">Font Size</label>
+                <input id="email-size" type="range" min="12" max="48" value="16" class="font-size-slider" data-target="svg-email">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Position Y</label>
+                <input id="email-position-y" type="range" min="0" max="100" value="170" class="position-slider" data-target="svg-email" data-attribute="y" data-max-height="311">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Position X</label>
+                <input id="email-position-x" type="range" min="0" max="100" value="40" class="position-slider" data-target="svg-email" data-attribute="x" data-max-width="480">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Font Family</label>
+                <select id="email-font-family" class="font-family-selector" data-target="svg-email">
+                    <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI</option>
+                    <option value="Arial, Helvetica, sans-serif">Arial</option>
+                    <option value="'Courier New', Courier, monospace">Courier New</option>
+                    <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Font Weight</label>
+                <select id="email-font-weight" class="font-weight-selector" data-target="svg-email">
+                    <option value="normal">Normal</option>
+                    <option value="italic">Italic</option>
+                    <option value="bold">Bold</option>
+                    <option value="bolder">Extra Bold</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Letter Spacing</label>
+                <input id="email-letter-spacing" type="range" min="0" max="10" value="0" class="letter-spacing-slider" data-target="svg-email">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Text Color</label>
+                <div class="color-container">
+                    <input type="color" id="email-color" value="#000000" class="text-color-picker" data-target="svg-email">
+                    <input type="text" class="color-input" id="email-color-text" value="#000000">
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <h2 class="column-title">Phone</h2>
+            <div class="control-group">
+                <label class="control-label">Font Size</label>
+                <input id="phone-size" type="range" min="12" max="48" value="16" class="font-size-slider" data-target="svg-phone">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Position Y</label>
+                <input id="phone-position-y" type="range" min="0" max="100" value="200" class="position-slider" data-target="svg-phone" data-attribute="y" data-max-height="311">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Position X</label>
+                <input id="phone-position-x" type="range" min="0" max="100" value="40" class="position-slider" data-target="svg-phone" data-attribute="x" data-max-width="480">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Font Family</label>
+                <select id="phone-font-family" class="font-family-selector" data-target="svg-phone">
+                    <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI</option>
+                    <option value="Arial, Helvetica, sans-serif">Arial</option>
+                    <option value="'Courier New', Courier, monospace">Courier New</option>
+                    <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Font Weight</label>
+                <select id="phone-font-weight" class="font-weight-selector" data-target="svg-phone">
+                    <option value="normal">Normal</option>
+                    <option value="italic">Italic</option>
+                    <option value="bold">Bold</option>
+                    <option value="bolder">Extra Bold</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Letter Spacing</label>
+                <input id="phone-letter-spacing" type="range" min="0" max="10" value="0" class="letter-spacing-slider" data-target="svg-phone">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Text Color</label>
+                <div class="color-container">
+                    <input type="color" id="phone-color" value="#000000" class="text-color-picker" data-target="svg-phone">
+                    <input type="text" class="color-input" id="phone-color-text" value="#000000">
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <h2 class="column-title">Website</h2>
+            <div class="control-group">
+                <label class="control-label">Font Size</label>
+                <input id="website-size" type="range" min="12" max="48" value="16" class="font-size-slider" data-target="svg-website">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Position Y</label>
+                <input id="website-position-y" type="range" min="0" max="100" value="230" class="position-slider" data-target="svg-website" data-attribute="y" data-max-height="311">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Position X</label>
+                <input id="website-position-x" type="range" min="0" max="100" value="40" class="position-slider" data-target="svg-website" data-attribute="x" data-max-width="480">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Font Family</label>
+                <select id="website-font-family" class="font-family-selector" data-target="svg-website">
+                    <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI</option>
+                    <option value="Arial, Helvetica, sans-serif">Arial</option>
+                    <option value="'Courier New', Courier, monospace">Courier New</option>
+                    <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Font Weight</label>
+                <select id="website-font-weight" class="font-weight-selector" data-target="svg-website">
+                    <option value="normal">Normal</option>
+                    <option value="italic">Italic</option>
+                    <option value="bold">Bold</option>
+                    <option value="bolder">Extra Bold</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Letter Spacing</label>
+                <input id="website-letter-spacing" type="range" min="0" max="10" value="0" class="letter-spacing-slider" data-target="svg-website">
+            </div>
+            <div class="control-group">
+                <label class="control-label">Text Color</label>
+                <div class="color-container">
+                    <input type="color" id="website-color" value="#000000" class="text-color-picker" data-target="svg-website">
+                    <input type="text" class="color-input" id="website-color-text" value="#000000">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script>
+        document.querySelectorAll('.font-size-slider').forEach(slider => {
+            slider.addEventListener('input', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                targetElement.setAttribute('font-size', this.value);
+            });
+        });
+
+        document.querySelectorAll('.position-slider').forEach(slider => {
+            slider.addEventListener('input', function() {
+                const targetId = this.getAttribute('data-target');
+                const attribute = this.getAttribute('data-attribute');
+                const targetElement = document.getElementById(targetId);
+                const maxSize = this.getAttribute(attribute === 'y' ? 'data-max-height' : 'data-max-width');
+                const newValue = (this.value / 100) * maxSize;
+                targetElement.setAttribute(attribute, newValue);
+            });
+        });
+
+        document.querySelectorAll('.font-family-selector').forEach(selector => {
+            selector.addEventListener('change', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                targetElement.setAttribute('font-family', this.value);
+            });
+        });
+
+        document.querySelectorAll('.font-weight-selector').forEach(selector => {
+            selector.addEventListener('change', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                const fontWeight = this.value === 'italic' ? 'normal' : this.value;
+                const fontStyle = this.value === 'italic' ? 'italic' : 'normal';
+                targetElement.setAttribute('font-weight', fontWeight);
+                targetElement.setAttribute('font-style', fontStyle);
+            });
+        });
+
+        document.querySelectorAll('.letter-spacing-slider').forEach(slider => {
+            slider.addEventListener('input', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                targetElement.setAttribute('letter-spacing', this.value + 'px');
+            });
+        });
+
+        document.querySelectorAll('.text-color-picker').forEach(picker => {
+            picker.addEventListener('input', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                targetElement.setAttribute('fill', this.value);
+
+                // Update the corresponding text input
+                const textInput = document.getElementById(targetId + '-color-text');
+                textInput.value = this.value;
+            });
+        });
+
+        document.querySelectorAll('.color-input').forEach(input => {
+            input.addEventListener('input', function() {
+                const targetId = this.id.replace('-color-text', '-color');
+                const colorPicker = document.getElementById(targetId);
+                colorPicker.value = this.value;
+
+                const targetElement = document.getElementById(colorPicker.getAttribute('data-target'));
+                targetElement.setAttribute('fill', this.value);
+            });
+        });
+
+        document.getElementById('card-background-color').addEventListener('input', function() {
+            const background = document.getElementById('svg-background');
+            background.setAttribute('fill', this.value);
+
+            // Update the corresponding text input
+            const textInput = document.getElementById('card-background-color-text');
+            textInput.value = this.value;
+        });
+
+        document.getElementById('card-background-color-text').addEventListener('input', function() {
+            const colorPicker = document.getElementById('card-background-color');
+            colorPicker.value = this.value;
+
+            const background = document.getElementById('svg-background');
+            background.setAttribute('fill', this.value);
+        });
+
+        function updateMaxSize(newWidth, newHeight) {
+            document.querySelectorAll('.position-slider').forEach(slider => {
+                if (slider.getAttribute('data-attribute') === 'y') {
+                    slider.setAttribute('data-max-height', newHeight);
+                } else {
+                    slider.setAttribute('data-max-width', newWidth);
+                }
+            });
+
+            // Update the viewBox attribute of the SVG to match the new dimensions
+            const svg = document.getElementById('svg');
+            svg.setAttribute('viewBox', `0 0 ${newWidth} ${newHeight}`);
+        }
+
+        document.getElementById('card-size').addEventListener('change', function() {
+            const card = document.getElementById('card');
+            let newWidth, newHeight;
+            switch(this.value) {
+                case 'standard':
+                    newWidth = 480;
+                    newHeight = 311;
+                    break;
+                case 'square':
+                    newWidth = 311;
+                    newHeight = 311;
+                    break;
+                case 'mini':
+                    newWidth = 480;
+                    newHeight = 254;
+                    break;
+            }
+            card.style.width = newWidth + 'px';
+            card.style.height = newHeight + 'px';
+            updateMaxSize(newWidth, newHeight);
+        });
+
+        document.getElementById('printButton').addEventListener('click', function() {
+            window.print();
+        });
+
+        document.getElementById('downloadButton').addEventListener('click', function() {
+            const svg = document.getElementById('svg');
+            const logoContainer = document.getElementById('logo-container');
+            const logo = document.getElementById('logo');
+            const scale = 2; // Increase this for higher resolution
+            
+            // Create a canvas to ensure all content is captured
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const img = new Image();
+
+            img.onload = function () {
+                // Set canvas size to SVG size
+                canvas.width = svg.width.baseVal.value * scale;
+                canvas.height = svg.height.baseVal.value * scale;
+                context.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                // Draw the logo on the canvas if it is visible
+                if (logoContainer.style.display !== 'none') {
+                    const logoX = logoContainer.offsetLeft * scale;
+                    const logoY = logoContainer.offsetTop * scale;
+                    const logoWidth = logoContainer.offsetWidth * scale;
+                    const logoHeight = logoContainer.offsetHeight * scale;
+                    const logoImg = new Image();
+                    logoImg.src = logo.src;
+                    logoImg.onload = function() {
+                        context.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
+
+                        // Export the canvas to a PNG file
+                        canvas.toBlob(function (blob) {
+                            const link = document.createElement('a');
+                            link.download = 'business_card.png';
+                            link.href = URL.createObjectURL(blob);
+                            link.click();
+                            URL.revokeObjectURL(link.href);
+                        }, 'image/png');
+                    };
+                } else {
+                    // Export the canvas to a PNG file without the logo
+                    canvas.toBlob(function (blob) {
+                        const link = document.createElement('a');
+                        link.download = 'business_card.png';
+                        link.href = URL.createObjectURL(blob);
+                        link.click();
+                        URL.revokeObjectURL(link.href);
+                    }, 'image/png');
+                }
+            };
+
+            img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+        });
+
+        // Initialize with standard card size
+        updateMaxSize(480, 311);
+
+        // Logo upload and manipulation
+        const logoContainer = document.getElementById('logo-container');
+        const logo = document.getElementById('logo');
+        const fileInput = document.getElementById('logo-upload');
+        const clearLogoButton = document.getElementById('clear-logo');
+
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                logo.src = e.target.result;
+                logoContainer.style.display = 'block'; // Show logo container when a logo is uploaded
+            };
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        });
+
+        clearLogoButton.addEventListener('click', function() {
+            logo.src = '';
+            logoContainer.style.display = 'none'; // Hide logo container when cleared
+            fileInput.value = ''; // Clear file input
+        });
+
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        logoContainer.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            offsetX = e.clientX - logoContainer.offsetLeft;
+            offsetY = e.clientY - logoContainer.offsetTop;
+            logoContainer.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                logoContainer.style.left = `${e.clientX - offsetX}px`;
+                logoContainer.style.top = `${e.clientY - offsetY}px`;
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            isDragging = false;
+            logoContainer.style.cursor = 'move';
+        });
+
+        logoContainer.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            const scale = e.deltaY > 0 ? 0.9 : 1.1;
+            const currentWidth = logoContainer.offsetWidth;
+            const currentHeight = logoContainer.offsetHeight;
+            logoContainer.style.width = `${currentWidth * scale}px`;
+            logoContainer.style.height = `${currentHeight * scale}px`;
+        });
+
+        // Update SVG text elements when input fields change
+        document.getElementById('name-input').addEventListener('input', function() {
+            document.getElementById('svg-name').textContent = this.value;
+        });
+
+        document.getElementById('title-input').addEventListener('input', function() {
+            document.getElementById('svg-title').textContent = this.value;
+        });
+
+        document.getElementById('email-input').addEventListener('input', function() {
+            document.getElementById('svg-email').textContent = this.value;
+        });
+
+        document.getElementById('phone-input').addEventListener('input', function() {
+            document.getElementById('svg-phone').textContent = this.value;
+        });
+
+        document.getElementById('website-input').addEventListener('input', function() {
+            document.getElementById('svg-website').textContent = this.value;
+        });
+    </script>
+</body>
+</html>
